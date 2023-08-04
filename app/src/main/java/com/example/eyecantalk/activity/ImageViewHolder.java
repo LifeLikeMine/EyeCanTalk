@@ -17,8 +17,7 @@ public class ImageViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void bind(ImageData imageData) {
-        int imageResId = itemView.getContext().getResources().getIdentifier(imageData.getImageUrl(), "drawable", itemView.getContext().getPackageName());
-        imageView.setImageResource(imageResId);
+        imageView.setImageResource(imageData.getImageResId());
 
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override

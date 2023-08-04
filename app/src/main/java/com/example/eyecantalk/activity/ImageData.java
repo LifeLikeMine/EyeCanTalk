@@ -2,18 +2,25 @@ package com.example.eyecantalk.activity;
 
 public class ImageData {
     private int id;
-    private String imageUrl;
+    private int imageResId;
     private String imageDescription;
 
-    public ImageData(int id, String imageUrl, String imageDescription) {
+    public ImageData(int id, int imageResId, String imageDescription) {
         this.id = id;
-        this.imageUrl = imageUrl;
+        this.imageResId = imageResId;
         this.imageDescription = imageDescription;
     }
 
-    public String getImageUrl() {
-        return this.imageUrl;
+    public int getId() {
+        return id;
     }
 
-    // Getters and setters
+    public int getImageResId() {
+        return imageResId;
+    }
+
+    public String getImageDescription() {
+        return imageDescription;
+    }
+
 }

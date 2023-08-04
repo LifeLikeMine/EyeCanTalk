@@ -11,9 +11,11 @@ import java.util.List;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> {
     private List<ImageData> imageDataList;
+    private OnImageItemClickListener onImageItemClickListener;
 
-    public ImageAdapter(List<ImageData> imageDataList) {
+    public ImageAdapter(List<ImageData> imageDataList, OnImageItemClickListener onImageItemClickListener) {
         this.imageDataList = imageDataList;
+        this.onImageItemClickListener = onImageItemClickListener;
     }
 
     @Override
@@ -26,6 +28,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> {
     public void onBindViewHolder(ImageViewHolder holder, int position) {
         ImageData imageData = imageDataList.get(position);
         holder.bind(imageData);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onImageItemClickListener.onImageItemClick(imageData);
+            }
+        });
     }
 
     @Override

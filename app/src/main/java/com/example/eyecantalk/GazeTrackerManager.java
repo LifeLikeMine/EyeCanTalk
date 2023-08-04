@@ -38,8 +38,7 @@ public class GazeTrackerManager {
   private final WeakReference<Context> mContext;
 
   GazeTracker gazeTracker = null;
-  // TODO: change licence key
-  String SEESO_LICENSE_KEY = "dev_019qohk91ev1e38g0rzgyte1uc37vqi5h0iwuyuu";
+  String SEESO_LICENSE_KEY = BuildConfig.SEESO_KEY;
 
   static public GazeTrackerManager makeNewInstance(Context context) {
     if (mInstance != null) {
@@ -61,7 +60,7 @@ public class GazeTrackerManager {
     return gazeTracker != null;
   }
 
-  public void initGazeTracker(InitializationCallback callback) {
+  public void initGazeTracker(InitializationCallback callback, UserStatusOption userStatusOption) {
     initializationCallbacks.add(callback);
 
     GazeTracker.initGazeTracker(mContext.get(), SEESO_LICENSE_KEY, initializationCallback);
@@ -78,7 +77,6 @@ public class GazeTrackerManager {
     for(GazeTrackerCallback callback : callbacks) {
       if (callback instanceof GazeCallback) {
         gazeCallbacks.add((GazeCallback)callback);
-
       } else if (callback instanceof CalibrationCallback) {
         calibrationCallbacks.add((CalibrationCallback) callback);
 

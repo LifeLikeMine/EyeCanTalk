@@ -14,8 +14,6 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -206,7 +204,6 @@ public class SettingActivity extends AppCompatActivity {
     private View viewWarningTracking;
     private PointView viewPoint;
     private Button btnInitGaze, btnReleaseGaze;
-    private Button btnStartTracking, btnStopTracking;
     private Button btnStartCalibration, btnStopCalibration, btnSetCalibration;
     private Button btnGuiDemo;
     private CalibrationViewer viewCalibration;
@@ -222,10 +219,6 @@ public class SettingActivity extends AppCompatActivity {
     private boolean isStatusAttention = false;
     private boolean isStatusDrowsiness = false;
     private int activeStatusCount = 0;
-
-    // calibration type
-    private RadioGroup rgCalibration;
-    private RadioGroup rgAccuracy;
     private CalibrationModeType calibrationType = CalibrationModeType.DEFAULT;
     private AccuracyCriteria criteria = AccuracyCriteria.DEFAULT;
 
@@ -382,19 +375,10 @@ public class SettingActivity extends AppCompatActivity {
         public void onClick(View v) {
             if (v == btnInitGaze) {
                 initGaze();
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                startTracking();
+
             } else if (v == btnReleaseGaze) {
                 releaseGaze();
-            } else if (v == btnStartTracking) {
-                startTracking();
-            } else if (v == btnStopTracking) {
-                stopTracking();
-            } else if (v == btnStartCalibration) {
+            }  else if (v == btnStartCalibration) {
                 startCalibration();
             } else if (v == btnStopCalibration) {
                 stopCalibration();
@@ -487,6 +471,7 @@ public class SettingActivity extends AppCompatActivity {
         public void onInitialized(GazeTracker gazeTracker, InitializationErrorType error) {
             if (gazeTracker != null) {
                 initSuccess(gazeTracker);
+                startTracking();
             } else {
                 initFail(error);
             }
@@ -517,7 +502,6 @@ public class SettingActivity extends AppCompatActivity {
             Log.i(TAG, "check User Status Attention Rate " + attentionScore);
             viewAttention.setAttention(attentionScore);
         }
-
         @Override
         public void onBlink(long timestamp, boolean isBlinkLeft, boolean isBlinkRight, boolean isBlink, float eyeOpenness) {
             Log.i(TAG, "check User Status Blink " +  "Left: " + isBlinkLeft + ", Right: " + isBlinkRight + ", Blink: " + isBlink + ", eyeOpenness: " + eyeOpenness);
@@ -613,7 +597,18 @@ public class SettingActivity extends AppCompatActivity {
     private void initGaze() {
         showProgress();
 
-        gazeTrackerManager.initGazeTracker(initializationCallback);
+        UserStatusOption userStatusOption = new UserStatusOption();
+        if (isStatusAttention) {
+            userStatusOption.useAttention();
+        }
+        if (isStatusBlink) {
+            userStatusOption.useBlink();
+        }
+        if (isStatusDrowsiness) {
+            userStatusOption.useDrowsiness();
+        }
+
+        gazeTrackerManager.initGazeTracker(initializationCallback, userStatusOption);
     }
 
     private void releaseGaze() {

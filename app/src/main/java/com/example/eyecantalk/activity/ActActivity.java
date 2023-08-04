@@ -291,8 +291,8 @@ public class ActActivity extends AppCompatActivity {
         public void onBlink(long timestamp, boolean isBlinkLeft, boolean isBlinkRight, boolean isBlink, float eyeOpenness) {
             Log.i(TAG, "check User Status Blink " +  "Left: " + isBlinkLeft + ", Right: " + isBlinkRight + ", Blink: " + isBlink + ", eyeOpenness: " + eyeOpenness);
             if(isBlink){
-                Toast.makeText(getApplicationContext(),"x좌표위치 : " + filtered[0] +" y좌표위치 : " + filtered[1],Toast.LENGTH_SHORT).show();
                 if (isViewContains(imageRecyclerView, filtered[0], filtered[1])) {
+                    Toast.makeText(getApplicationContext(),"x좌표위치 : " + filtered[0] +" y좌표위치 : " + filtered[1],Toast.LENGTH_SHORT).show();
                     View itemView = findViewAtPosition(imageRecyclerView, filtered[0], filtered[1]);
                     if (itemView != null) {
                         itemView.performClick();

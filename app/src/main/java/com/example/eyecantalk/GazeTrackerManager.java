@@ -60,10 +60,9 @@ public class GazeTrackerManager {
     return gazeTracker != null;
   }
 
-  public void initGazeTracker(InitializationCallback callback, UserStatusOption userStatusOption) {
+  public void initGazeTracker(InitializationCallback callback, UserStatusOption option) {
     initializationCallbacks.add(callback);
-
-    GazeTracker.initGazeTracker(mContext.get(), SEESO_LICENSE_KEY, initializationCallback);
+    GazeTracker.initGazeTracker(mContext.get(), SEESO_LICENSE_KEY, initializationCallback, option);
   }
 
   public void deinitGazeTracker() {

@@ -284,15 +284,12 @@ public class ActActivity extends AppCompatActivity {
     private final UserStatusCallback userStatusCallback = new UserStatusCallback() {
         @Override
         public void onAttention(long timestampBegin, long timestampEnd, float attentionScore) {
-            Log.i(TAG, "check User Status Attention Rate " + attentionScore);
         }
         @Override
         @SuppressLint("ClickableViewAccessibility")
         public void onBlink(long timestamp, boolean isBlinkLeft, boolean isBlinkRight, boolean isBlink, float eyeOpenness) {
-            Log.i(TAG, "check User Status Blink " +  "Left: " + isBlinkLeft + ", Right: " + isBlinkRight + ", Blink: " + isBlink + ", eyeOpenness: " + eyeOpenness);
             if(isBlink){
                 if (isViewContains(imageRecyclerView, filtered[0], filtered[1])) {
-                    Toast.makeText(getApplicationContext(),"x좌표위치 : " + filtered[0] +" y좌표위치 : " + filtered[1],Toast.LENGTH_SHORT).show();
                     View itemView = findViewAtPosition(imageRecyclerView, filtered[0], filtered[1]);
                     if (itemView != null) {
                         itemView.performClick();
@@ -302,7 +299,6 @@ public class ActActivity extends AppCompatActivity {
         }
         @Override
         public void onDrowsiness(long timestamp, boolean isDrowsiness) {
-            Log.i(TAG, "check User Status Drowsiness " + isDrowsiness);
         }
     };
 

@@ -11,9 +11,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -115,8 +118,12 @@ public class ActActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    private Button btnTest;
     private void initView() {
         gazePathView = findViewById(R.id.gazePathView);
+
+        btnTest = findViewById(R.id.btn_test);
+        btnTest.setOnClickListener(onClickListener);
 
         List<ImageData> imageDataList = new ArrayList<>();
         imageDataList.add(new ImageData(1, R.drawable.chair, "의자"));
@@ -149,8 +156,8 @@ public class ActActivity extends AppCompatActivity {
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (v == null) {
-                // 넣어야 함
+            if (v == btnTest) {
+                Toast.makeText(getApplicationContext(),"초기화되었습니다!",Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -289,10 +296,23 @@ public class ActActivity extends AppCompatActivity {
         @SuppressLint("ClickableViewAccessibility")
         public void onBlink(long timestamp, boolean isBlinkLeft, boolean isBlinkRight, boolean isBlink, float eyeOpenness) {
             if(isBlink){
+                if (isViewContains(btnTest, filtered[0], filtered[1])) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            btnTest.performClick();
+                        }
+                    });
+                }
                 if (isViewContains(imageRecyclerView, filtered[0], filtered[1])) {
                     View itemView = findViewAtPosition(imageRecyclerView, filtered[0], filtered[1]);
                     if (itemView != null) {
-                        itemView.performClick();
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                itemView.performClick();
+                            }
+                        });
                     }
                 }
             }
@@ -309,7 +329,6 @@ public class ActActivity extends AppCompatActivity {
         int viewY = location[1];
         int viewWidth = view.getWidth();
         int viewHeight = view.getHeight();
-
         return x >= viewX && x <= viewX + viewWidth && y >= viewY && y <= viewY + viewHeight;
     }
 

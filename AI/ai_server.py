@@ -11,8 +11,8 @@ mysql = MySQL()
 # base_model = mlflow.keras.load_model(base_model_path)
 
 # MySQL configurations
-app.config['MYSQL_DATABASE_USER'] = 'admin'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'lch63877812'
+app.config['MYSQL_DATABASE_USER'] = ''
+app.config['MYSQL_DATABASE_PASSWORD'] = ''
 app.config['MYSQL_DATABASE_DB'] = 'mydb'
 app.config['MYSQL_DATABASE_HOST'] = 'mydb.c9ibzimhazfs.ap-northeast-2.rds.amazonaws.com'
 

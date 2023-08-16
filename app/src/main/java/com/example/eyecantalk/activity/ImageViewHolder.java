@@ -18,7 +18,6 @@ public class ImageViewHolder extends RecyclerView.ViewHolder {
 
     public void bind(ImageData imageData) {
         imageView.setImageResource(imageData.getImageResId());
-
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

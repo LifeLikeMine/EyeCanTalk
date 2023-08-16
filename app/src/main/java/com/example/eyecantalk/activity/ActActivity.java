@@ -142,6 +142,7 @@ public class ActActivity extends AppCompatActivity {
                 showSelectedImage(imageData);
             }
         });
+
         selectedImageAdapter = new SelectedImageAdapter(selectedImages);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
@@ -333,7 +334,22 @@ public class ActActivity extends AppCompatActivity {
     }
 
     private View findViewAtPosition(RecyclerView recyclerView, float x, float y) {
-        View childView = recyclerView.findChildViewUnder(x, y);
+
+        int tx = 0;
+        int ty = 0;
+
+        int[] location = new int[2];
+        recyclerView.getLocationOnScreen(location);
+        tx = location[0];
+        ty = location[1];
+
+        float rx = x-tx;
+        float ry = y-ty;
+
+        View childView = recyclerView.findChildViewUnder(rx, ry);
+
+        Log.d(TAG,"ChildView : "+childView+", x, y: "+x+", "+y);
+
         if (childView != null) {
             RecyclerView.ViewHolder viewHolder = recyclerView.getChildViewHolder(childView);
             int position = viewHolder.getAdapterPosition();
@@ -341,6 +357,7 @@ public class ActActivity extends AppCompatActivity {
                 return childView;
             }
         }
+
         return null;
     }
 }

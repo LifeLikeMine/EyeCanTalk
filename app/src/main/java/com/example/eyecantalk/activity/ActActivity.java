@@ -130,6 +130,19 @@ public class ActActivity extends AppCompatActivity {
         imageDataList.add(new ImageData(2, R.drawable.like, "좋아요"));
         imageDataList.add(new ImageData(3, R.drawable.hate, "싫어요"));
         imageDataList.add(new ImageData(4, R.drawable.hello, "인사"));
+        imageDataList.add(new ImageData(5, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(6, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(7, R.drawable.hate, "싫어요"));
+        imageDataList.add(new ImageData(8, R.drawable.hello, "인사"));
+        imageDataList.add(new ImageData(9, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(10, R.drawable.like, "좋아요"));
+        imageDataList.add(new ImageData(11, R.drawable.hate, "싫어요"));
+        imageDataList.add(new ImageData(12, R.drawable.hello, "인사"));
+        imageDataList.add(new ImageData(13, R.drawable.like, "좋아요"));
+        imageDataList.add(new ImageData(14, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(15, R.drawable.hello, "인사"));
+        imageDataList.add(new ImageData(16, R.drawable.hate, "싫어요"));
+
 
         List<ImageData> selectedImages = new ArrayList<>();
 

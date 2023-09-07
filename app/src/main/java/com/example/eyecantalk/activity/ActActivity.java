@@ -1,23 +1,18 @@
 package com.example.eyecantalk.activity;
 
+import static com.example.eyecantalk.uuid.UUIDManager.getUUID;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,15 +25,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eyecantalk.GazeTrackerManager;
 import com.example.eyecantalk.R;
+import com.example.eyecantalk.imageData.ImageData;
+import com.example.eyecantalk.retrofit.RetrofitClient;
 import com.example.library.GazePathView;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import camp.visual.gazetracker.GazeTracker;
-import camp.visual.gazetracker.callback.CalibrationCallback;
 import camp.visual.gazetracker.callback.GazeCallback;
 import camp.visual.gazetracker.callback.InitializationCallback;
 import camp.visual.gazetracker.callback.UserStatusCallback;
@@ -47,7 +42,6 @@ import camp.visual.gazetracker.constant.UserStatusOption;
 import camp.visual.gazetracker.filter.OneEuroFilterManager;
 import camp.visual.gazetracker.gaze.GazeInfo;
 import camp.visual.gazetracker.state.EyeMovementState;
-import camp.visual.gazetracker.state.TrackingState;
 import camp.visual.gazetracker.util.ViewLayoutChecker;
 
 public class ActActivity extends AppCompatActivity {
@@ -55,6 +49,7 @@ public class ActActivity extends AppCompatActivity {
     private ImageAdapter imageAdapter;
     private RecyclerView selectedImageRecyclerView;
     private SelectedImageAdapter selectedImageAdapter;
+    private UUID uuid;
 
     // 아이 트래킹
     private static final String TAG = ActActivity.class.getSimpleName();
@@ -84,6 +79,7 @@ public class ActActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         Log.i(TAG, "onStart");
+
         gazeTrackerManager = GazeTrackerManager.makeNewInstance(this);
         initGaze();
         gazeTrackerManager.setGazeTrackerCallbacks(gazeCallback, userStatusCallback);
@@ -118,6 +114,8 @@ public class ActActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    String suuid;
+    List<ImageData> selectedImages  = new ArrayList<>();
     private Button btnTest;
     private void initView() {
         gazePathView = findViewById(R.id.gazePathView);
@@ -125,26 +123,28 @@ public class ActActivity extends AppCompatActivity {
         btnTest = findViewById(R.id.btn_test);
         btnTest.setOnClickListener(onClickListener);
 
+        uuid = getUUID(getApplicationContext());
+        
+        suuid = uuid.toString();
+
         List<ImageData> imageDataList = new ArrayList<>();
-        imageDataList.add(new ImageData(1, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(2, R.drawable.like, "좋아요"));
-        imageDataList.add(new ImageData(3, R.drawable.hate, "싫어요"));
-        imageDataList.add(new ImageData(4, R.drawable.hello, "인사"));
-        imageDataList.add(new ImageData(5, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(6, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(7, R.drawable.hate, "싫어요"));
-        imageDataList.add(new ImageData(8, R.drawable.hello, "인사"));
-        imageDataList.add(new ImageData(9, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(10, R.drawable.like, "좋아요"));
-        imageDataList.add(new ImageData(11, R.drawable.hate, "싫어요"));
-        imageDataList.add(new ImageData(12, R.drawable.hello, "인사"));
-        imageDataList.add(new ImageData(13, R.drawable.like, "좋아요"));
-        imageDataList.add(new ImageData(14, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(15, R.drawable.hello, "인사"));
-        imageDataList.add(new ImageData(16, R.drawable.hate, "싫어요"));
+        imageDataList.add(new ImageData(suuid, 1, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(suuid,2, R.drawable.like, "좋아요"));
+        imageDataList.add(new ImageData(suuid,3, R.drawable.hate, "싫어요"));
+        imageDataList.add(new ImageData(suuid, 4, R.drawable.hello, "인사"));
+        imageDataList.add(new ImageData(suuid, 5, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(suuid, 6, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(suuid, 7, R.drawable.hate, "싫어요"));
+        imageDataList.add(new ImageData(suuid,8, R.drawable.hello, "인사"));
+        imageDataList.add(new ImageData(suuid,9, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(suuid,10, R.drawable.like, "좋아요"));
+        imageDataList.add(new ImageData(suuid,11, R.drawable.hate, "싫어요"));
+        imageDataList.add(new ImageData(suuid,12, R.drawable.hello, "인사"));
+        imageDataList.add(new ImageData(suuid,13, R.drawable.like, "좋아요"));
+        imageDataList.add(new ImageData(suuid,14, R.drawable.chair, "의자"));
+        imageDataList.add(new ImageData(suuid,15, R.drawable.hello, "인사"));
+        imageDataList.add(new ImageData(suuid,16, R.drawable.hate, "싫어요"));
 
-
-        List<ImageData> selectedImages = new ArrayList<>();
 
         imageRecyclerView = findViewById(R.id.imageRecyclerView);
         selectedImageRecyclerView = findViewById(R.id.selectedImageRecyclerView);
@@ -153,6 +153,8 @@ public class ActActivity extends AppCompatActivity {
             @Override
             public void onImageItemClick(ImageData imageData) {
                 showSelectedImage(imageData);
+                selectedImageAdapter.notifyDataSetChanged();
+                sendImageDataToServer();
             }
         });
 
@@ -166,6 +168,30 @@ public class ActActivity extends AppCompatActivity {
         selectedImageRecyclerView.setAdapter(selectedImageAdapter);
     }
 
+    // 데이터 전송용으로 변환
+    public List<Integer> convertSelectedImages(List<ImageData> selectedImages) {
+        List<Integer> imageResIdList = new ArrayList<>();
+
+        for (ImageData imageData : selectedImages) {
+            int imageResId = imageData.getImageResId();
+            imageResIdList.add(imageResId);
+        }
+        return imageResIdList;
+    }
+
+    // 클릭한 데이터 서버로 보내기
+    private void sendImageDataToServer() {
+        Log.d("Api", "data send");
+        List<Integer> imageResIdList =  convertSelectedImages(selectedImages);
+        RetrofitClient.sendImageData(suuid, imageResIdList);
+    }
+
+
+    // 선택된 AAC 위 화면으로 올리기
+    private void showSelectedImage(ImageData imageData) {
+        selectedImageAdapter.addImageData(imageData);
+    }
+
     // 클릭 리스너
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
@@ -175,9 +201,8 @@ public class ActActivity extends AppCompatActivity {
             }
         }
     };
-    private void showSelectedImage(ImageData imageData) {
-        selectedImageAdapter.addImageData(imageData);
-    }
+
+
 
     // 권한
     private void initHandler() {

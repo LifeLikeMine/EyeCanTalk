@@ -1,18 +1,15 @@
 package com.example.eyecantalk.activity;
 
-import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eyecantalk.R;
+import com.example.eyecantalk.imageData.ImageData;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 public class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> {
     private List<ImageData> imageDataList;

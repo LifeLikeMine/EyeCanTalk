@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.eyecantalk.R;
+import com.example.eyecantalk.imageData.ImageData;
 
 import java.util.List;
 
@@ -39,6 +40,7 @@ public class SelectedImageAdapter extends RecyclerView.Adapter<SelectedImageAdap
     public void addImageData(ImageData imageData) {
         selectedImages.add(imageData);
         notifyItemInserted(selectedImages.size() - 1);
+
     }
 
     public class SelectedImageViewHolder extends RecyclerView.ViewHolder {
@@ -55,5 +57,7 @@ public class SelectedImageAdapter extends RecyclerView.Adapter<SelectedImageAdap
                     .into(selectedImageView);
         }
     }
+
+
 }
 

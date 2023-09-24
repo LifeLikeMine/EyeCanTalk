@@ -3,15 +3,32 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="80dp"
-    android:layout_height="80dp"
+    android:layout_height="100dp"
     android:layout_margin="8dp"
     app:cardCornerRadius="8dp">
 
-    <ImageView
-        android:id="@+id/imageView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/baseline_settings_24"
-        android:scaleType="centerCrop" />
+        android:orientation="vertical">
+
+        <!-- ImageView: 사진을 표시할 뷰 -->
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/baseline_settings_24"
+            android:layout_gravity="center" />
+
+        <!-- TextView: 이미지 아래에 이름을 표시할 뷰 -->
+        <TextView
+            android:id="@+id/item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이름"
+            android:textSize="12dp"
+            android:layout_gravity="center"/>
+    </LinearLayout>
 
 </androidx.cardview.widget.CardView>

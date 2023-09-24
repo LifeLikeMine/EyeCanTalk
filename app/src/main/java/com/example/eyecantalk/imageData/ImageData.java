@@ -1,27 +1,23 @@
 package com.example.eyecantalk.imageData;
 
+import android.graphics.drawable.Drawable;
+
 public class ImageData {
-    private String uuid;
     private int id;
-    private int imageResId;
+    private Drawable imageResId;
     private String imageDescription;
 
-    public ImageData(String uuid, int id, int imageResId, String imageDescription) {
-        this.uuid = uuid;
+    public ImageData(int id, Drawable imageResId, String imageDescription) {
         this.id = id;
         this.imageResId = imageResId;
         this.imageDescription = imageDescription;
-    }
-
-    public String getUuid() {
-        return uuid;
     }
 
     public int getId() {
         return id;
     }
 
-    public int getImageResId() {
+    public Drawable getImageResId() {
         return imageResId;
     }
 

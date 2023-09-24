@@ -5,6 +5,8 @@ import static com.example.eyecantalk.uuid.UUIDManager.getUUID;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,12 +27,24 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eyecantalk.GazeTrackerManager;
 import com.example.eyecantalk.R;
+import com.example.eyecantalk.adapters.ImageAdapter;
+import com.example.eyecantalk.adapters.OnImageItemClickListener;
+import com.example.eyecantalk.adapters.RecommendImageAdapter;
+import com.example.eyecantalk.adapters.SelectedImageAdapter;
+import com.example.eyecantalk.imageData.AacResponse;
 import com.example.eyecantalk.imageData.ImageData;
+import com.example.eyecantalk.imageData.ImageDataList;
 import com.example.eyecantalk.retrofit.RetrofitClient;
 import com.example.library.GazePathView;
+import com.opencsv.CSVReader;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import camp.visual.gazetracker.GazeTracker;
@@ -43,12 +57,18 @@ import camp.visual.gazetracker.filter.OneEuroFilterManager;
 import camp.visual.gazetracker.gaze.GazeInfo;
 import camp.visual.gazetracker.state.EyeMovementState;
 import camp.visual.gazetracker.util.ViewLayoutChecker;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 public class ActActivity extends AppCompatActivity {
     private RecyclerView imageRecyclerView;
     private ImageAdapter imageAdapter;
     private RecyclerView selectedImageRecyclerView;
     private SelectedImageAdapter selectedImageAdapter;
+    private RecyclerView recommendRecycleView;
+    private RecommendImageAdapter recommendImageAdapter;
     private UUID uuid;
 
     // 아이 트래킹
@@ -115,38 +135,57 @@ public class ActActivity extends AppCompatActivity {
     }
 
     String suuid;
-    List<ImageData> selectedImages  = new ArrayList<>();
-    private Button btnTest;
+    List<String[]> csvAllContent;
+    ArrayList<ImageData> selectedImages  = new ArrayList<>();
+    ArrayList<ImageData> recommendImages = new ArrayList<>();
+    ArrayList<ImageData> imageDataList = new ArrayList<>();
+    private Button btnClear;
     private void initView() {
         gazePathView = findViewById(R.id.gazePathView);
 
-        btnTest = findViewById(R.id.btn_test);
-        btnTest.setOnClickListener(onClickListener);
+        btnClear = findViewById(R.id.btn_clear);
+        btnClear.setOnClickListener(onClickListener);
 
         uuid = getUUID(getApplicationContext());
         
         suuid = uuid.toString();
 
-        List<ImageData> imageDataList = new ArrayList<>();
-        imageDataList.add(new ImageData(suuid, 1, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(suuid,2, R.drawable.like, "좋아요"));
-        imageDataList.add(new ImageData(suuid,3, R.drawable.hate, "싫어요"));
-        imageDataList.add(new ImageData(suuid, 4, R.drawable.hello, "인사"));
-        imageDataList.add(new ImageData(suuid, 5, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(suuid, 6, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(suuid, 7, R.drawable.hate, "싫어요"));
-        imageDataList.add(new ImageData(suuid,8, R.drawable.hello, "인사"));
-        imageDataList.add(new ImageData(suuid,9, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(suuid,10, R.drawable.like, "좋아요"));
-        imageDataList.add(new ImageData(suuid,11, R.drawable.hate, "싫어요"));
-        imageDataList.add(new ImageData(suuid,12, R.drawable.hello, "인사"));
-        imageDataList.add(new ImageData(suuid,13, R.drawable.like, "좋아요"));
-        imageDataList.add(new ImageData(suuid,14, R.drawable.chair, "의자"));
-        imageDataList.add(new ImageData(suuid,15, R.drawable.hello, "인사"));
-        imageDataList.add(new ImageData(suuid,16, R.drawable.hate, "싫어요"));
+        // categorylist 만들기
+        Set<String> categoryList = new HashSet<>();
 
+        // 전체 aac 이미지 RecyclerView 에 넣기
+        AssetManager assetManager = getAssets();
+        try {
+            InputStream inputStream = assetManager.open("aac_files.csv");
+            CSVReader reader = new CSVReader(new InputStreamReader(inputStream, "UTF-8"));
+            csvAllContent = (List<String[]>) reader.readAll();
+            for(String content[] : csvAllContent){
+                int id = Integer.parseInt(content[0]);
+                // 카테고리 중복제거
+                categoryList.add(content[1]);
+                String imageRes = content[2];
+                String imageName = content[3];
+                InputStream is = assetManager.open(imageRes);
+                Drawable drawable = Drawable.createFromStream(is, null);
+
+                // 메인 리사이클러뷰 어댑터에 쓸 이미지 데이터 리스트 구성
+                // 이걸 어떻게 카테고리 별로 구성 하지? 이미지 리스트를 만들지?
+                // 카테고리별로 리사이클 뷰를 구성했을때 해당 카테고리 아이템을 클릭하면 어떻게 해당 카테고리의 이미지만 보이게하지?
+                // 카테고리의 메인 이미지를 하드코딩해야되나? 아니면 카테고리의 가장 첫번째 이미지를 참조할 방법이 뭘까
+                imageDataList.add(new ImageData(id, drawable, imageName));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        List<String> result = new ArrayList<>(categoryList);
+
+        for(String cat : result){
+            Log.d("category", cat);
+        }
 
         imageRecyclerView = findViewById(R.id.imageRecyclerView);
+        recommendRecycleView = findViewById(R.id.recommendRecycleView);
         selectedImageRecyclerView = findViewById(R.id.selectedImageRecyclerView);
 
         imageAdapter = new ImageAdapter(imageDataList, new OnImageItemClickListener() {
@@ -157,8 +196,8 @@ public class ActActivity extends AppCompatActivity {
                 sendImageDataToServer();
             }
         });
-
         selectedImageAdapter = new SelectedImageAdapter(selectedImages);
+        recommendImageAdapter = new RecommendImageAdapter(recommendImages);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
         imageRecyclerView.setLayoutManager(gridLayoutManager);
@@ -166,24 +205,67 @@ public class ActActivity extends AppCompatActivity {
 
         selectedImageRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         selectedImageRecyclerView.setAdapter(selectedImageAdapter);
+
+        recommendRecycleView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recommendRecycleView.setAdapter(recommendImageAdapter);
     }
 
     // 데이터 전송용으로 변환
     public List<Integer> convertSelectedImages(List<ImageData> selectedImages) {
-        List<Integer> imageResIdList = new ArrayList<>();
-
+        List<Integer> imageIdList = new ArrayList<>();
         for (ImageData imageData : selectedImages) {
-            int imageResId = imageData.getImageResId();
-            imageResIdList.add(imageResId);
+            int imageId = imageData.getId();
+            imageIdList.add(imageId);
         }
-        return imageResIdList;
+        return imageIdList;
     }
 
     // 클릭한 데이터 서버로 보내기
     private void sendImageDataToServer() {
         Log.d("Api", "data send");
-        List<Integer> imageResIdList =  convertSelectedImages(selectedImages);
-        RetrofitClient.sendImageData(suuid, imageResIdList);
+        List<Integer> imageIdList =  convertSelectedImages(selectedImages);
+        sendImageData(suuid, imageIdList);
+    }
+
+    // 클릭한 데이터 레트로핏 처리
+    private void sendImageData(String suuid, List<Integer> imageData) {
+        RetrofitClient.ApiService apiService = RetrofitClient.getRetrofit().create(RetrofitClient.ApiService.class);
+        ImageDataList imageDataListWrapper = new ImageDataList(suuid, imageData);
+        Call<AacResponse> call = apiService.uploadImageList(imageDataListWrapper);
+        call.enqueue(new Callback<AacResponse>() {
+            @Override
+            public void onResponse(Call<AacResponse> call, Response<AacResponse> response) {
+                if (response.isSuccessful()) {
+                    // 성공적으로 요청이 처리됨
+                    // 서버 응답 처리
+                    try{
+                        AacResponse data = response.body();
+                        List<String> aacIds = data.getAacId();
+                        recommendImages.clear();
+                        for(String aacId : aacIds){
+                            int id = Integer.parseInt(aacId);
+                            for(ImageData imageData : imageDataList){
+                                if(id == imageData.getId()){
+                                    Log.d("recommedData", ""+imageData.getId());
+                                    recommendImageAdapter.addImageData(imageData);
+                                }
+                            }
+                        }
+                        recommendImageAdapter.notifyDataSetChanged();
+                    } catch (Exception e){
+                        Log.d("response", "response fail");
+                    }
+                } else {
+                    // 요청 실패
+                    // 오류 처리
+                }
+            }
+            @Override
+            public void onFailure(Call<AacResponse> call, Throwable t) {
+                // 네트워크 오류 등으로 인한 요청 실패
+                // 오류 처리
+            }
+        });
     }
 
 
@@ -196,12 +278,13 @@ public class ActActivity extends AppCompatActivity {
     private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (v == btnTest) {
+            if (v == btnClear) {
+                selectedImages.clear();
+                selectedImageAdapter.notifyDataSetChanged();
                 Toast.makeText(getApplicationContext(),"초기화되었습니다!",Toast.LENGTH_SHORT).show();
             }
         }
     };
-
 
 
     // 권한
@@ -209,6 +292,7 @@ public class ActActivity extends AppCompatActivity {
         backgroundThread.start();
         backgroundHandler = new Handler(backgroundThread.getLooper());
     }
+
     private void releaseHandler() {
         backgroundThread.quitSafely();
     }
@@ -271,6 +355,7 @@ public class ActActivity extends AppCompatActivity {
         return;
     }
     // 권한
+
 
     // 아이 트래킹
     float[] filtered = oneEuroFilterManager.getFilteredValues();
@@ -335,11 +420,11 @@ public class ActActivity extends AppCompatActivity {
         @SuppressLint("ClickableViewAccessibility")
         public void onBlink(long timestamp, boolean isBlinkLeft, boolean isBlinkRight, boolean isBlink, float eyeOpenness) {
             if(isBlink){
-                if (isViewContains(btnTest, filtered[0], filtered[1])) {
+                if (isViewContains(btnClear, filtered[0], filtered[1])) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            btnTest.performClick();
+                            btnClear.performClick();
                         }
                     });
                 }
@@ -385,8 +470,6 @@ public class ActActivity extends AppCompatActivity {
         float ry = y-ty;
 
         View childView = recyclerView.findChildViewUnder(rx, ry);
-
-        Log.d(TAG,"ChildView : "+childView+", x, y: "+x+", "+y);
 
         if (childView != null) {
             RecyclerView.ViewHolder viewHolder = recyclerView.getChildViewHolder(childView);

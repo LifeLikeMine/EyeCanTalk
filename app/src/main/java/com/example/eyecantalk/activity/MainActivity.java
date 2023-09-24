@@ -133,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
     private Button btnMain, btnSetting;
 
     private void initView() {
-
         btnMain = findViewById(R.id.btn_main);
         btnMain.setOnClickListener(onClickListener);
         btnSetting = findViewById(R.id.btn_setting);

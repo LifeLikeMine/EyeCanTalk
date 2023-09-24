@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/selectedImageView"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="80dp"
-    android:layout_height="80dp"
-    android:layout_margin="8dp"
-    android:scaleType="centerCrop" />
+    android:layout_height="100dp"
+    android:orientation="vertical">
+
+    <!-- ImageView: 사진을 표시할 뷰 -->
+    <ImageView
+        android:id="@+id/selectedImageView"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/baseline_settings_24"
+        android:layout_gravity="center" />
+
+    <!-- TextView: 이미지 아래에 이름을 표시할 뷰 -->
+    <TextView
+        android:id="@+id/selectedTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="이름"
+        android:textSize="12dp"
+        android:layout_gravity="center"/>
+</LinearLayout>

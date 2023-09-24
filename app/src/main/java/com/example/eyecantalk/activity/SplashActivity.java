@@ -23,6 +23,6 @@ public class SplashActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             }
-        }, 2000); // 2초간 스플래시 화면을 보여줌
+        }, 1500); // 2초간 스플래시 화면을 보여줌
     }
 }

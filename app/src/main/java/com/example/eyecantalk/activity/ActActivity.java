@@ -15,6 +15,8 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,7 +29,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eyecantalk.GazeTrackerManager;
 import com.example.eyecantalk.R;
+import com.example.eyecantalk.adapters.CategoryAdapter;
 import com.example.eyecantalk.adapters.ImageAdapter;
+import com.example.eyecantalk.adapters.OnCategoryItemClickListener;
 import com.example.eyecantalk.adapters.OnImageItemClickListener;
 import com.example.eyecantalk.adapters.RecommendImageAdapter;
 import com.example.eyecantalk.adapters.SelectedImageAdapter;
@@ -42,8 +46,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,9 +67,10 @@ import camp.visual.gazetracker.util.ViewLayoutChecker;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 public class ActActivity extends AppCompatActivity {
+    private RecyclerView categoryRecyclerView;
+    private CategoryAdapter categoryAdapter;
     private RecyclerView imageRecyclerView;
     private ImageAdapter imageAdapter;
     private RecyclerView selectedImageRecyclerView;
@@ -139,19 +147,42 @@ public class ActActivity extends AppCompatActivity {
     ArrayList<ImageData> selectedImages  = new ArrayList<>();
     ArrayList<ImageData> recommendImages = new ArrayList<>();
     ArrayList<ImageData> imageDataList = new ArrayList<>();
+    Map<String, List<ImageData>> categoryMap;
     private Button btnClear;
+    private Button btnBack;
+    private Switch iSwitch;
     private void initView() {
         gazePathView = findViewById(R.id.gazePathView);
 
         btnClear = findViewById(R.id.btn_clear);
         btnClear.setOnClickListener(onClickListener);
+        btnBack = findViewById(R.id.btn_back);
+        btnBack.setOnClickListener(onClickListener);
+
+        iSwitch = findViewById(R.id.switch1);
+
+        iSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // 스위치가 켜졌을 때
+                    gazePathView.setVisibility(View.GONE);
+                    gazeTrackerManager.stopGazeTracking();
+                } else {
+                    // 스위치가 꺼졌을 때
+                    gazePathView.setVisibility(View.VISIBLE);
+                    gazeTrackerManager.startGazeTracking();
+                }
+            }
+        });
 
         uuid = getUUID(getApplicationContext());
         
-        suuid = uuid.toString();
+        suuid = "cd5f2549-6f14-4d9d-ac0a-76de39b46008";
 
         // categorylist 만들기
-        Set<String> categoryList = new HashSet<>();
+        categoryMap = new HashMap<>();
+        Set<String> categorySet = new HashSet<>();
 
         // 전체 aac 이미지 RecyclerView 에 넣기
         AssetManager assetManager = getAssets();
@@ -161,32 +192,61 @@ public class ActActivity extends AppCompatActivity {
             csvAllContent = (List<String[]>) reader.readAll();
             for(String content[] : csvAllContent){
                 int id = Integer.parseInt(content[0]);
-                // 카테고리 중복제거
-                categoryList.add(content[1]);
+                String category = content[1];
+                categorySet.add(category);
                 String imageRes = content[2];
                 String imageName = content[3];
                 InputStream is = assetManager.open(imageRes);
                 Drawable drawable = Drawable.createFromStream(is, null);
+                ImageData imageData = new ImageData(id, drawable, imageName);
 
-                // 메인 리사이클러뷰 어댑터에 쓸 이미지 데이터 리스트 구성
-                // 이걸 어떻게 카테고리 별로 구성 하지? 이미지 리스트를 만들지?
-                // 카테고리별로 리사이클 뷰를 구성했을때 해당 카테고리 아이템을 클릭하면 어떻게 해당 카테고리의 이미지만 보이게하지?
-                // 카테고리의 메인 이미지를 하드코딩해야되나? 아니면 카테고리의 가장 첫번째 이미지를 참조할 방법이 뭘까
-                imageDataList.add(new ImageData(id, drawable, imageName));
+                imageDataList.add(imageData);
+
+                if (!categoryMap.containsKey(category)) {
+                    categoryMap.put(category, new ArrayList<>());
+                }
+                // 해당 카테고리의 리스트에 이미지 데이터를 추가합니다.
+                categoryMap.get(category).add(imageData);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        List<String> categoryList = new ArrayList<>(categorySet);
 
-        List<String> result = new ArrayList<>(categoryList);
+        // 기존 카테고리 합치기
+        List<String> categoriesToCombine = Arrays.asList("대화하기", "감정표현"); // 합칠 카테고리 목록
 
-        for(String cat : result){
-            Log.d("category", cat);
+        // 새로운 카테고리 생성
+        String commonExpressions = "자주쓰는 표현";
+
+        // 새로운 카테고리를 위한 리스트 생성
+        categoryMap.put(commonExpressions, new ArrayList<>());
+
+        // 기존 카테고리 합치기
+        for (String category : categoriesToCombine) {
+            if (categoryMap.containsKey(category)) {
+                // 기존 카테고리의 이미지 데이터를 새로운 카테고리에 추가
+                categoryMap.get(commonExpressions).addAll(categoryMap.get(category));
+            }
         }
 
+        // 필요한 경우, 새로운 카테고리를 전체 카테고리 리스트에 추가
+        categoryList.add(0, commonExpressions);
+
+        categoryRecyclerView = findViewById(R.id.categoryRecyclerView);
         imageRecyclerView = findViewById(R.id.imageRecyclerView);
         recommendRecycleView = findViewById(R.id.recommendRecycleView);
         selectedImageRecyclerView = findViewById(R.id.selectedImageRecyclerView);
+
+        categoryAdapter = new CategoryAdapter(categoryList, new OnCategoryItemClickListener() {
+            @Override
+            public void onCategoryItemClick(String category) {
+                switchCategory(category);
+                btnBack.setVisibility(View.VISIBLE);
+                categoryRecyclerView.setVisibility(View.GONE);
+                imageRecyclerView.setVisibility(View.VISIBLE);
+            }
+        });
 
         imageAdapter = new ImageAdapter(imageDataList, new OnImageItemClickListener() {
             @Override
@@ -199,8 +259,10 @@ public class ActActivity extends AppCompatActivity {
         selectedImageAdapter = new SelectedImageAdapter(selectedImages);
         recommendImageAdapter = new RecommendImageAdapter(recommendImages);
 
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 4);
-        imageRecyclerView.setLayoutManager(gridLayoutManager);
+        categoryRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        categoryRecyclerView.setAdapter(categoryAdapter);
+
+        imageRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
         imageRecyclerView.setAdapter(imageAdapter);
 
         selectedImageRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -208,6 +270,16 @@ public class ActActivity extends AppCompatActivity {
 
         recommendRecycleView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recommendRecycleView.setAdapter(recommendImageAdapter);
+    }
+
+
+    // 카테고리 변경
+    private void switchCategory(String category) {
+        Log.d("switchCategory", category);
+        List<ImageData> imageDataList = categoryMap.get(category);
+        if (imageDataList != null) {
+            imageAdapter.setImageDataList(imageDataList);
+        }
     }
 
     // 데이터 전송용으로 변환
@@ -282,10 +354,13 @@ public class ActActivity extends AppCompatActivity {
                 selectedImages.clear();
                 selectedImageAdapter.notifyDataSetChanged();
                 Toast.makeText(getApplicationContext(),"초기화되었습니다!",Toast.LENGTH_SHORT).show();
+            } else if (v == btnBack) {
+                imageRecyclerView.setVisibility(View.GONE);
+                categoryRecyclerView.setVisibility(View.VISIBLE);
+                btnBack.setVisibility(View.GONE);
             }
         }
     };
-
 
     // 권한
     private void initHandler() {

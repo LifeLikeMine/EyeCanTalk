@@ -20,6 +20,11 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> {
         this.onImageItemClickListener = onImageItemClickListener;
     }
 
+    public void setImageDataList(List<ImageData> imageDataList) {
+        this.imageDataList = imageDataList;
+        notifyDataSetChanged();
+    }
+
     @Override
     public ImageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false);

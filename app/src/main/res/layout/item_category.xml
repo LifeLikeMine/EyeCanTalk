@@ -11,24 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-
-        <!-- ImageView: 사진을 표시할 뷰 -->
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            android:scaleType="centerCrop"
-            android:src="@drawable/baseline_settings_24"
-            android:layout_gravity="center" />
-
-        <!-- TextView: 이미지 아래에 이름을 표시할 뷰 -->
         <TextView
-            android:id="@+id/item_name"
+            android:id="@+id/category_name"
             android:layout_width="wrap_content"
-            android:layout_height="25dp"
-            android:text="이름"
+            android:layout_height="match_parent"
+            android:text="카테고리"
             android:gravity="center"
-            android:textSize="10dp"
+            android:textSize="18dp"
             android:layout_gravity="center"/>
     </LinearLayout>
 

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="80dp"
-    android:layout_height="100dp"
+    android:layout_width="60dp"
+    android:layout_height="80dp"
     android:orientation="vertical">
 
     <!-- ImageView: 사진을 표시할 뷰 -->
     <ImageView
         android:id="@+id/selectedImageView"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="60dp"
         android:scaleType="centerCrop"
         android:src="@drawable/baseline_settings_24"
         android:layout_gravity="center" />
@@ -19,7 +19,7 @@
         android:id="@+id/selectedTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/black"
+        android:textColor="#000000"
         android:text="이름"
         android:textSize="12dp"
         android:layout_gravity="center"/>

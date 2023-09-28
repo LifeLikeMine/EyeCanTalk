@@ -2,9 +2,10 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="80dp"
-    android:layout_height="105dp"
-    android:layout_margin="8dp"
+    android:layout_width="120dp"
+    android:layout_height="145dp"
+    android:layout_margin="3dp"
+    app:cardBackgroundColor="#fefbff"
     app:cardCornerRadius="8dp">
 
     <LinearLayout
@@ -16,6 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="카테고리"
+            android:textColor="#1b1b1f"
             android:gravity="center"
             android:textSize="18dp"
             android:layout_gravity="center"/>

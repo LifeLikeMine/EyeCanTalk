@@ -1,7 +1,9 @@
 package com.example.eyecantalk.activity;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
@@ -14,6 +16,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -206,6 +209,7 @@ public class SettingActivity extends AppCompatActivity {
     private Button btnInitGaze, btnReleaseGaze;
     private Button btnStartCalibration, btnStopCalibration, btnSetCalibration;
     private Button btnGuiDemo;
+    private Switch switchEyeTracking;
     private CalibrationViewer viewCalibration;
     private EyeBlinkView viewEyeBlink;
     private AttentionView viewAttention;
@@ -249,6 +253,35 @@ public class SettingActivity extends AppCompatActivity {
         btnGuiDemo = findViewById(R.id.btn_gui_demo);
         btnGuiDemo.setOnClickListener(onClickListener);
 
+        switchEyeTracking = findViewById(R.id.switch_eyeTracking);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("eyeTracking", Context.MODE_PRIVATE);
+        String eyeTrackingUse = sharedPreferences.getString("eyeTrackingUse", "true");
+
+        if(eyeTrackingUse.equals("true")){
+            switchEyeTracking.setChecked(true);
+        } else {
+            switchEyeTracking.setChecked(false);
+        }
+        switchEyeTracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // 스위치가 켜졌을 때
+                    SharedPreferences sharedPreferences = getSharedPreferences("eyeTracking", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("eyeTrackingUse", "true"); // 예: "키"는 설정의 이름, "값"은 설정 값
+                    editor.apply();
+                } else {
+                    // 스위치가 꺼졌을 때
+                    SharedPreferences sharedPreferences = getSharedPreferences("eyeTracking", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("eyeTrackingUse", "false"); // 예: "키"는 설정의 이름, "값"은 설정 값
+                    editor.apply();
+                }
+            }
+        });
+
         viewPoint = findViewById(R.id.view_point);
         viewCalibration = findViewById(R.id.view_calibration);
 
@@ -256,43 +289,6 @@ public class SettingActivity extends AppCompatActivity {
         setOffsetOfView();
         setViewAtGazeTrackerState();
     }
-
-
-    private SwitchCompat.OnCheckedChangeListener onCheckedChangeSwitch = new CompoundButton.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            if (buttonView == swUseGazeFilter) {
-                isUseGazeFilter = isChecked;
-            } else if (buttonView == swStatusBlink) {
-                isStatusBlink = isChecked;
-                if (isStatusBlink) {
-                    viewEyeBlink.setVisibility(View.VISIBLE);
-                    activeStatusCount++;
-                } else {
-                    viewEyeBlink.setVisibility(View.GONE);
-                    activeStatusCount--;
-                }
-            } else if (buttonView == swStatusAttention) {
-                isStatusAttention = isChecked;
-                if (isStatusAttention) {
-                    viewAttention.setVisibility(View.VISIBLE);
-                    activeStatusCount++;
-                } else {
-                    viewAttention.setVisibility(View.GONE);
-                    activeStatusCount--;
-                }
-            } else if (buttonView == swStatusDrowsiness) {
-                isStatusDrowsiness = isChecked;
-                if (isStatusDrowsiness) {
-                    viewDrowsiness.setVisibility(View.VISIBLE);
-                    activeStatusCount++;
-                } else {
-                    viewDrowsiness.setVisibility(View.GONE);
-                    activeStatusCount--;
-                }
-            }
-        }
-    };
 
     private TextureView.SurfaceTextureListener surfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
@@ -375,7 +371,6 @@ public class SettingActivity extends AppCompatActivity {
         public void onClick(View v) {
             if (v == btnInitGaze) {
                 initGaze();
-
             } else if (v == btnReleaseGaze) {
                 releaseGaze();
             }  else if (v == btnStartCalibration) {
@@ -451,10 +446,10 @@ public class SettingActivity extends AppCompatActivity {
                 if (!isTracking()) {
                     hideCalibrationView();
                 }
+                btnGuiDemo.setEnabled(isTrackerValid());
             }
         });
     }
-
     // view end
 
     // gazeTracker

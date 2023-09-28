@@ -4,6 +4,8 @@ import static com.example.eyecantalk.uuid.UUIDManager.getUUID;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.drawable.Drawable;
@@ -93,6 +95,8 @@ public class ActActivity extends AppCompatActivity {
     private final OneEuroFilterManager oneEuroFilterManager = new OneEuroFilterManager(
             2, 30, 0.5F, 0.001F, 1.0F);
 
+    private SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -112,12 +116,29 @@ public class ActActivity extends AppCompatActivity {
         initGaze();
         gazeTrackerManager.setGazeTrackerCallbacks(gazeCallback, userStatusCallback);
         gazeTrackerManager = GazeTrackerManager.getInstance();
+
+        sharedPreferences = getSharedPreferences("eyeTracking", Context.MODE_PRIVATE);
+
+        String eyeTrackingUse = sharedPreferences.getString("eyeTrackingUse", "true");
+        if(eyeTrackingUse.equals("true")){
+            iSwitch.setChecked(true);
+        } else {
+            iSwitch.setChecked(false);
+            if(gazeTrackerManager.isTracking()){
+                gazeTrackerManager.stopGazeTracking();
+            }
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        gazeTrackerManager.startGazeTracking();
+        if(!iSwitch.isChecked()){
+            gazeTrackerManager.stopGazeTracking();
+        } else {
+            gazeTrackerManager.startGazeTracking();
+            setOffsetOfView();
+        }
         setOffsetOfView();
         Log.i(TAG, "onResume");
     }
@@ -132,7 +153,7 @@ public class ActActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
-        gazeTrackerManager.setGazeTrackerCallbacks(gazeCallback, userStatusCallback);
+        gazeTrackerManager.removeCallbacks(gazeCallback);
         Log.i(TAG, "onStop");
     }
 
@@ -142,14 +163,23 @@ public class ActActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    String suuid;
-    List<String[]> csvAllContent;
-    ArrayList<ImageData> selectedImages  = new ArrayList<>();
-    ArrayList<ImageData> recommendImages = new ArrayList<>();
-    ArrayList<ImageData> imageDataList = new ArrayList<>();
-    Map<String, List<ImageData>> categoryMap;
-    private Button btnClear;
-    private Button btnBack;
+    private void showToast(final String msg, final boolean isShort) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(), msg, isShort ? Toast.LENGTH_SHORT : Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private String suuid;
+    private List<String[]> csvAllContent;
+    private ArrayList<ImageData> selectedImages  = new ArrayList<>();
+    private ArrayList<ImageData> recommendImages = new ArrayList<>();
+    private ArrayList<ImageData> imageDataList = new ArrayList<>();
+    private ArrayList<String> categoryList;
+    private Map<String, List<ImageData>> categoryMap;
+    private Button btnClear, btnBack, btnPre, btnNext;
     private Switch iSwitch;
     private void initView() {
         gazePathView = findViewById(R.id.gazePathView);
@@ -159,6 +189,9 @@ public class ActActivity extends AppCompatActivity {
         btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(onClickListener);
 
+        btnPre = findViewById(R.id.btn_pre);
+        btnNext = findViewById(R.id.btn_next);
+
         iSwitch = findViewById(R.id.switch1);
 
         iSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -166,12 +199,17 @@ public class ActActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     // 스위치가 켜졌을 때
-                    gazePathView.setVisibility(View.GONE);
-                    gazeTrackerManager.stopGazeTracking();
+                    gazePathView.setVisibility(View.VISIBLE);
+                    if(!gazeTrackerManager.isTracking()){
+                        gazeTrackerManager.startGazeTracking();
+                        setCalibration();
+                    }
                 } else {
                     // 스위치가 꺼졌을 때
-                    gazePathView.setVisibility(View.VISIBLE);
-                    gazeTrackerManager.startGazeTracking();
+                    if(gazeTrackerManager.isTracking()){
+                        gazeTrackerManager.stopGazeTracking();
+                    }
+                    gazePathView.setVisibility(View.GONE);
                 }
             }
         });
@@ -211,7 +249,8 @@ public class ActActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        List<String> categoryList = new ArrayList<>(categorySet);
+
+        categoryList = new ArrayList<>(categorySet);
 
         // 기존 카테고리 합치기
         List<String> categoriesToCombine = Arrays.asList("대화하기", "감정표현"); // 합칠 카테고리 목록
@@ -230,7 +269,6 @@ public class ActActivity extends AppCompatActivity {
             }
         }
 
-        // 필요한 경우, 새로운 카테고리를 전체 카테고리 리스트에 추가
         categoryList.add(0, commonExpressions);
 
         categoryRecyclerView = findViewById(R.id.categoryRecyclerView);
@@ -248,21 +286,23 @@ public class ActActivity extends AppCompatActivity {
             }
         });
 
-        imageAdapter = new ImageAdapter(imageDataList, new OnImageItemClickListener() {
+        imageAdapter = new ImageAdapter(null, new OnImageItemClickListener() {
             @Override
             public void onImageItemClick(ImageData imageData) {
                 showSelectedImage(imageData);
                 selectedImageAdapter.notifyDataSetChanged();
+                selectedImageRecyclerView.scrollToPosition(selectedImages.size() - 1);
                 sendImageDataToServer();
             }
         });
         selectedImageAdapter = new SelectedImageAdapter(selectedImages);
         recommendImageAdapter = new RecommendImageAdapter(recommendImages);
 
-        categoryRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+
+        categoryRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         categoryRecyclerView.setAdapter(categoryAdapter);
 
-        imageRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        imageRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         imageRecyclerView.setAdapter(imageAdapter);
 
         selectedImageRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -270,6 +310,55 @@ public class ActActivity extends AppCompatActivity {
 
         recommendRecycleView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         recommendRecycleView.setAdapter(recommendImageAdapter);
+
+        btnPre.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RecyclerView recyclerView;
+                if(categoryRecyclerView.getVisibility() == View.VISIBLE){
+                    recyclerView = categoryRecyclerView;
+                } else {
+                    recyclerView = imageRecyclerView;
+                }
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+                int firstVisiblePosition = gridLayoutManager.findFirstVisibleItemPosition();
+                if (firstVisiblePosition > 3) {
+                    // 이전 아이템이 화면에 보이도록 스크롤합니다.
+                    recyclerView.smoothScrollToPosition(firstVisiblePosition - 4);
+                } else if (firstVisiblePosition > 0) {
+                    // 이전 아이템이 화면에 보이도록 스크롤합니다.
+                    recyclerView.smoothScrollToPosition(firstVisiblePosition - 1);
+                }
+            }
+        });
+
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                RecyclerView recyclerView;
+                ArrayList dataSet;
+                if(categoryRecyclerView.getVisibility() == View.VISIBLE){
+                    recyclerView = categoryRecyclerView;
+                    dataSet = categoryList;
+                } else {
+                    recyclerView = imageRecyclerView;
+                    dataSet = imageDataList;
+                }
+                RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
+                GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
+                int lastVisiblePosition = gridLayoutManager.findLastVisibleItemPosition();
+
+                // 마지막 아이템의 위치가 데이터셋의 크기를 초과하지 않으면
+                if (lastVisiblePosition < dataSet.size() - 4) {
+                    // 다음 아이템이 화면에 보이도록 스크롤합니다.
+                    recyclerView.smoothScrollToPosition(lastVisiblePosition + 4);
+                } else if (lastVisiblePosition < dataSet.size() - 1) {
+                    // 다음 아이템이 화면에 보이도록 스크롤합니다.
+                    recyclerView.smoothScrollToPosition(lastVisiblePosition + 1);
+                }
+            }
+        });
     }
 
 
@@ -328,14 +417,12 @@ public class ActActivity extends AppCompatActivity {
                         Log.d("response", "response fail");
                     }
                 } else {
-                    // 요청 실패
-                    // 오류 처리
+                    Log.d("onResponse", "response fail");
                 }
             }
             @Override
             public void onFailure(Call<AacResponse> call, Throwable t) {
-                // 네트워크 오류 등으로 인한 요청 실패
-                // 오류 처리
+                Log.d("onFailure", "network fail");
             }
         });
     }
@@ -355,6 +442,7 @@ public class ActActivity extends AppCompatActivity {
                 selectedImageAdapter.notifyDataSetChanged();
                 Toast.makeText(getApplicationContext(),"초기화되었습니다!",Toast.LENGTH_SHORT).show();
             } else if (v == btnBack) {
+                imageAdapter.setImageDataList(null);
                 imageRecyclerView.setVisibility(View.GONE);
                 categoryRecyclerView.setVisibility(View.VISIBLE);
                 btnBack.setVisibility(View.GONE);
@@ -462,16 +550,15 @@ public class ActActivity extends AppCompatActivity {
         gazeTrackerManager.initGazeTracker(initializationCallback, userStatusOption);
     }
 
-    private void startTracking() {
-        gazeTrackerManager.startGazeTracking();
-    }
-
     private final InitializationCallback initializationCallback = new InitializationCallback() {
         @Override
         public void onInitialized(GazeTracker gazeTracker, InitializationErrorType error) {
             if (gazeTracker != null) {
                 initSuccess(gazeTracker);
-                startTracking();
+                if(iSwitch.isChecked()) {
+                    gazeTrackerManager.startGazeTracking();
+                    setCalibration();
+                }
             } else {
                 initFail(error);
             }
@@ -486,6 +573,23 @@ public class ActActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), "initFail...", Toast.LENGTH_SHORT).show();
     }
 
+    private void setCalibration() {
+        GazeTrackerManager.LoadCalibrationResult result = gazeTrackerManager.loadCalibrationData();
+        switch (result) {
+            case SUCCESS:
+                showToast("setCalibrationData success", false);
+                break;
+            case FAIL_DOING_CALIBRATION:
+                showToast("calibrating", false);
+                break;
+            case FAIL_NO_CALIBRATION_DATA:
+                showToast("Calibration data is null", true);
+                break;
+            case FAIL_HAS_NO_TRACKER:
+                showToast("No tracker has initialized", true);
+                break;
+        }
+    }
 
     private final UserStatusCallback userStatusCallback = new UserStatusCallback() {
         @Override

@@ -15,6 +15,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageViewHolder> {
     private List<ImageData> imageDataList;
     private OnImageItemClickListener onImageItemClickListener;
 
+
     public ImageAdapter(List<ImageData> imageDataList, OnImageItemClickListener onImageItemClickListener) {
         this.imageDataList = imageDataList;
         this.onImageItemClickListener = onImageItemClickListener;

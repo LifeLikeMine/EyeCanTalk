@@ -2,9 +2,10 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="80dp"
-    android:layout_height="105dp"
-    android:layout_margin="8dp"
+    app:cardBackgroundColor="#fefbff"
+    android:layout_width="120dp"
+    android:layout_height="145dp"
+    android:layout_margin="3dp"
     app:cardCornerRadius="8dp">
 
     <LinearLayout
@@ -15,8 +16,8 @@
         <!-- ImageView: 사진을 표시할 뷰 -->
         <ImageView
             android:id="@+id/imageView"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:scaleType="centerCrop"
             android:src="@drawable/baseline_settings_24"
             android:layout_gravity="center" />
@@ -25,10 +26,11 @@
         <TextView
             android:id="@+id/item_name"
             android:layout_width="wrap_content"
-            android:layout_height="25dp"
+            android:layout_height="45dp"
             android:text="이름"
             android:gravity="center"
-            android:textSize="10dp"
+            android:textColor="#1b1b1f"
+            android:textSize="15dp"
             android:layout_gravity="center"/>
     </LinearLayout>
 

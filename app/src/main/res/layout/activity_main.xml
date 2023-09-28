@@ -13,11 +13,23 @@
         android:layout_height="wrap_content"
         android:text="Eye Can Talk"
         android:textSize="30sp"
-        app:layout_constraintVertical_bias="0.4"
+        android:textStyle="bold"
+        android:textColor="#172b4d"
+        app:layout_constraintVertical_bias="0.5"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
+
+    <ImageView
+        android:layout_width="180dp"
+        android:layout_height="180dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/eye_can_talk_logo"
+        app:layout_constraintBottom_toTopOf="@+id/textView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
 
     <LinearLayout
         android:id="@+id/layout_btn"
@@ -43,6 +55,7 @@
         android:text="아이트래킹 설정"
         android:layout_marginTop="30dp"
         tools:layout_editor_absoluteX="20dp"/>
+
     </LinearLayout>
 
 

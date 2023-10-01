@@ -58,8 +58,8 @@
         android:text="아이트래킹 설정"
         android:layout_marginTop="30dp"
         tools:layout_editor_absoluteX="20dp"/>
-
     </LinearLayout>
 
+    <include layout="@layout/layout_progress" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

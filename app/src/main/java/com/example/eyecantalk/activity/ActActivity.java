@@ -173,8 +173,10 @@ public class ActActivity extends AppCompatActivity {
     private Map<String, List<ImageData>> categoryMap;
     private Button btnClear, btnBack, btnPre, btnNext, btnDelete;
     private Switch iSwitch;
+
     private void initView() {
         gazePathView = findViewById(R.id.gazePathView);
+
 
         btnClear = findViewById(R.id.btn_clear);
         btnClear.setOnClickListener(onClickListener);
@@ -379,7 +381,6 @@ public class ActActivity extends AppCompatActivity {
         });
     }
 
-
     // 카테고리 변경
     private void switchCategory(String category) {
         Log.d("switchCategory", category);
@@ -419,10 +420,11 @@ public class ActActivity extends AppCompatActivity {
                     // 서버 응답 처리
                     try{
                         AacResponse data = response.body();
-                        List<String> aacIds = data.getAacId();
+                        Log.d("response", data.toString());
+                        List<Integer> aacIds = data.getAacId();
                         recommendImages.clear();
-                        for(String aacId : aacIds){
-                            int id = Integer.parseInt(aacId);
+                        for(Integer aacId : aacIds){
+                            int id = aacId;
                             for(ImageData imageData : imageDataList){
                                 if(id == imageData.getId()){
                                     Log.d("recommedData", ""+imageData.getId());
@@ -432,6 +434,7 @@ public class ActActivity extends AppCompatActivity {
                         }
                         recommendImageAdapter.notifyDataSetChanged();
                     } catch (Exception e){
+                        Log.d("response", e.getMessage());
                         Log.d("response", "response fail");
                     }
                 } else {
@@ -440,6 +443,7 @@ public class ActActivity extends AppCompatActivity {
             }
             @Override
             public void onFailure(Call<AacResponse> call, Throwable t) {
+                Log.e("onFailure", "onFailure: " + t.getMessage());
                 Log.d("onFailure", "network fail");
             }
         });

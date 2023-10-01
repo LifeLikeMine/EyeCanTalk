@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
@@ -25,6 +26,11 @@ public class RetrofitClient {
 
     // Retrofit 싱글톤
     private static Retrofit retrofit;
+    private static OkHttpClient okHttpClient = new OkHttpClient.Builder()
+            .connectTimeout(1, TimeUnit.MINUTES)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .build();
 
     public static Retrofit getRetrofit(){
         Gson gson = new GsonBuilder()
@@ -35,7 +41,7 @@ public class RetrofitClient {
         {
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
-                    .client(new OkHttpClient.Builder().build())
+                    .client(okHttpClient)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }

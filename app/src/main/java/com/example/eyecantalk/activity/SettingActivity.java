@@ -212,7 +212,6 @@ public class SettingActivity extends AppCompatActivity {
     private boolean isStatusBlink = false;
     private boolean isStatusAttention = false;
     private boolean isStatusDrowsiness = false;
-    private int activeStatusCount = 0;
     private CalibrationModeType calibrationType = CalibrationModeType.DEFAULT;
     private AccuracyCriteria criteria = AccuracyCriteria.DEFAULT;
 
@@ -590,11 +589,6 @@ public class SettingActivity extends AppCompatActivity {
         return isSuccess;
     }
 
-    private void stopCalibration() {
-        gazeTrackerManager.stopCalibration();
-        hideCalibrationView();
-        setViewAtGazeTrackerState();
-    }
 
     private void showGuiDemo() {
         Intent intent = new Intent(getApplicationContext(), DemoActivity.class);

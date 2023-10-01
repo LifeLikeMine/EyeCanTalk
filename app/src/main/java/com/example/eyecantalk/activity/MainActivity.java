@@ -1,6 +1,7 @@
 package com.example.eyecantalk.activity;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.SwitchCompat;
@@ -59,6 +61,26 @@ public class MainActivity extends AppCompatActivity {
     };
     private static final int REQ_PERMISSION = 1000;
 
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setTitle("앱 종료")
+                .setMessage("정말로 앱을 종료하시겠습니까?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // '예' 버튼을 눌렀을 때 앱을 종료합니다.
+                        finish();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+    @Override
+    public void onStart() {
+        super.onStart();
+        hideProgress();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,12 +153,17 @@ public class MainActivity extends AppCompatActivity {
 
     // view
     private Button btnMain, btnSetting;
+    private View layoutProgress;
 
     private void initView() {
+        layoutProgress = findViewById(R.id.layout_progress);
+        layoutProgress.setOnClickListener(null);
+
         btnMain = findViewById(R.id.btn_main);
         btnMain.setOnClickListener(onClickListener);
         btnSetting = findViewById(R.id.btn_setting);
         btnSetting.setOnClickListener(onClickListener);
+        hideProgress();
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -150,8 +177,34 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    private void showProgress() {
+        if (layoutProgress != null) {
+            Log.d("progress", "showProgress");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    layoutProgress.setVisibility(View.VISIBLE);
+                }
+            });
+        }
+    }
+
+    private void hideProgress() {
+        if (layoutProgress != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    layoutProgress.setVisibility(View.INVISIBLE);
+                }
+            });
+        }
+    }
+
     private void goMain(){
+        showProgress();
+
         Intent intent = new Intent(getApplicationContext(), ActActivity.class);
+        intent.putExtra("progressListener", String.valueOf(this));
         startActivity(intent);
     }
 

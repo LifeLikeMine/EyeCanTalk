@@ -77,8 +77,10 @@ public class ActActivity extends AppCompatActivity {
     private ImageAdapter imageAdapter;
     private RecyclerView selectedImageRecyclerView;
     private SelectedImageAdapter selectedImageAdapter;
-    private RecyclerView recommendRecycleView;
+    private RecyclerView recommendRecyclerView;
     private RecommendImageAdapter recommendImageAdapter;
+    private List<ImageData> nullList = new ArrayList<>();
+    private List<String> nullCList = new ArrayList<>();
     private UUID uuid;
 
     // 아이 트래킹
@@ -94,7 +96,6 @@ public class ActActivity extends AppCompatActivity {
     private Handler backgroundHandler;
     private final OneEuroFilterManager oneEuroFilterManager = new OneEuroFilterManager(
             2, 30, 0.5F, 0.001F, 1.0F);
-
     private SharedPreferences sharedPreferences;
 
     @Override
@@ -163,15 +164,6 @@ public class ActActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private void showToast(final String msg, final boolean isShort) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(getApplicationContext(), msg, isShort ? Toast.LENGTH_SHORT : Toast.LENGTH_LONG).show();
-            }
-        });
-    }
-
     private String suuid;
     private List<String[]> csvAllContent;
     private ArrayList<ImageData> selectedImages  = new ArrayList<>();
@@ -179,13 +171,15 @@ public class ActActivity extends AppCompatActivity {
     private ArrayList<ImageData> imageDataList = new ArrayList<>();
     private ArrayList<String> categoryList;
     private Map<String, List<ImageData>> categoryMap;
-    private Button btnClear, btnBack, btnPre, btnNext;
+    private Button btnClear, btnBack, btnPre, btnNext, btnDelete;
     private Switch iSwitch;
     private void initView() {
         gazePathView = findViewById(R.id.gazePathView);
 
         btnClear = findViewById(R.id.btn_clear);
         btnClear.setOnClickListener(onClickListener);
+        btnDelete = findViewById(R.id.btn_delete);
+        btnDelete.setOnClickListener(onClickListener);
         btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(onClickListener);
 
@@ -203,6 +197,10 @@ public class ActActivity extends AppCompatActivity {
                     if(!gazeTrackerManager.isTracking()){
                         gazeTrackerManager.startGazeTracking();
                         setCalibration();
+
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("eyeTrackingUse", "true"); // 예: "키"는 설정의 이름, "값"은 설정 값
+                        editor.apply();
                     }
                 } else {
                     // 스위치가 꺼졌을 때
@@ -210,6 +208,10 @@ public class ActActivity extends AppCompatActivity {
                         gazeTrackerManager.stopGazeTracking();
                     }
                     gazePathView.setVisibility(View.GONE);
+
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("eyeTrackingUse", "false"); // 예: "키"는 설정의 이름, "값"은 설정 값
+                    editor.apply();
                 }
             }
         });
@@ -253,40 +255,48 @@ public class ActActivity extends AppCompatActivity {
         categoryList = new ArrayList<>(categorySet);
 
         // 기존 카테고리 합치기
-        List<String> categoriesToCombine = Arrays.asList("대화하기", "감정표현"); // 합칠 카테고리 목록
 
         // 새로운 카테고리 생성
         String commonExpressions = "자주쓰는 표현";
-
-        // 새로운 카테고리를 위한 리스트 생성
         categoryMap.put(commonExpressions, new ArrayList<>());
 
-        // 기존 카테고리 합치기
-        for (String category : categoriesToCombine) {
-            if (categoryMap.containsKey(category)) {
-                // 기존 카테고리의 이미지 데이터를 새로운 카테고리에 추가
-                categoryMap.get(commonExpressions).addAll(categoryMap.get(category));
+        try {
+            InputStream inputStream = assetManager.open("aac_files_rec.csv");
+            CSVReader reader = new CSVReader(new InputStreamReader(inputStream, "UTF-8"));
+            List<String[]> csvRecContent = (List<String[]>) reader.readAll();
+            for (String content[] : csvRecContent) {
+                int id = Integer.parseInt(content[0]);
+                String imageRes = content[2];
+                String imageName = content[3];
+                InputStream is = assetManager.open(imageRes);
+                Drawable drawable = Drawable.createFromStream(is, null);
+                ImageData imageData = new ImageData(id, drawable, imageName);
+
+                categoryMap.get(commonExpressions).add(imageData);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         categoryList.add(0, commonExpressions);
 
         categoryRecyclerView = findViewById(R.id.categoryRecyclerView);
         imageRecyclerView = findViewById(R.id.imageRecyclerView);
-        recommendRecycleView = findViewById(R.id.recommendRecycleView);
+        recommendRecyclerView = findViewById(R.id.recommendRecycleView);
         selectedImageRecyclerView = findViewById(R.id.selectedImageRecyclerView);
 
         categoryAdapter = new CategoryAdapter(categoryList, new OnCategoryItemClickListener() {
             @Override
             public void onCategoryItemClick(String category) {
                 switchCategory(category);
+                categoryAdapter.setCategoryList(nullCList);
                 btnBack.setVisibility(View.VISIBLE);
                 categoryRecyclerView.setVisibility(View.GONE);
                 imageRecyclerView.setVisibility(View.VISIBLE);
             }
         });
 
-        imageAdapter = new ImageAdapter(null, new OnImageItemClickListener() {
+        imageAdapter = new ImageAdapter(nullList, new OnImageItemClickListener() {
             @Override
             public void onImageItemClick(ImageData imageData) {
                 showSelectedImage(imageData);
@@ -296,7 +306,15 @@ public class ActActivity extends AppCompatActivity {
             }
         });
         selectedImageAdapter = new SelectedImageAdapter(selectedImages);
-        recommendImageAdapter = new RecommendImageAdapter(recommendImages);
+        recommendImageAdapter = new RecommendImageAdapter(recommendImages, new OnImageItemClickListener() {
+            @Override
+            public void onImageItemClick(ImageData imageData) {
+                showSelectedImage(imageData);
+                selectedImageAdapter.notifyDataSetChanged();
+                selectedImageRecyclerView.scrollToPosition(selectedImages.size() - 1);
+                sendImageDataToServer();
+            }
+        });
 
 
         categoryRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
@@ -308,8 +326,8 @@ public class ActActivity extends AppCompatActivity {
         selectedImageRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         selectedImageRecyclerView.setAdapter(selectedImageAdapter);
 
-        recommendRecycleView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        recommendRecycleView.setAdapter(recommendImageAdapter);
+        recommendRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        recommendRecyclerView.setAdapter(recommendImageAdapter);
 
         btnPre.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -439,13 +457,27 @@ public class ActActivity extends AppCompatActivity {
         public void onClick(View v) {
             if (v == btnClear) {
                 selectedImages.clear();
+                recommendImages.clear();
+                recommendImageAdapter.notifyDataSetChanged();
                 selectedImageAdapter.notifyDataSetChanged();
                 Toast.makeText(getApplicationContext(),"초기화되었습니다!",Toast.LENGTH_SHORT).show();
             } else if (v == btnBack) {
-                imageAdapter.setImageDataList(null);
+                imageAdapter.setImageDataList(nullList);
+                categoryAdapter.setCategoryList(categoryList);
                 imageRecyclerView.setVisibility(View.GONE);
                 categoryRecyclerView.setVisibility(View.VISIBLE);
                 btnBack.setVisibility(View.GONE);
+            } else if (v == btnDelete) {
+                if(selectedImages.size() > 1) {
+                    selectedImages.remove(selectedImages.size() - 1);
+                    selectedImageAdapter.notifyDataSetChanged();
+                    sendImageDataToServer();
+                } else if(selectedImages.size() == 1){
+                    selectedImages.remove(selectedImages.size() - 1);
+                    selectedImageAdapter.notifyDataSetChanged();
+                    recommendImages.clear();
+                    recommendImageAdapter.notifyDataSetChanged();
+                }
             }
         }
     };
@@ -492,9 +524,9 @@ public class ActActivity extends AppCompatActivity {
     }
     private void checkPermission(boolean isGranted) {
         if (isGranted) {
-            permissionGranted();
+            Log.d("permission","permisson granted");
         } else {
-            Toast.makeText(this,"Not permisson",Toast.LENGTH_SHORT);
+            Log.d("permission","Not permisson");
         }
     }
     @Override
@@ -513,9 +545,6 @@ public class ActActivity extends AppCompatActivity {
                 }
                 break;
         }
-    }
-    private void permissionGranted() {
-        return;
     }
     // 권한
 
@@ -554,42 +583,36 @@ public class ActActivity extends AppCompatActivity {
         @Override
         public void onInitialized(GazeTracker gazeTracker, InitializationErrorType error) {
             if (gazeTracker != null) {
-                initSuccess(gazeTracker);
+                Log.d("gazeInit", "initSuccess!");
                 if(iSwitch.isChecked()) {
                     gazeTrackerManager.startGazeTracking();
                     setCalibration();
                 }
             } else {
-                initFail(error);
+                Log.d("gazeInit", "initFail...");
             }
         }
     };
-
-    private void initSuccess(GazeTracker gazeTracker) {
-//        Toast.makeText(getApplicationContext(),"initSuccess!",Toast.LENGTH_SHORT).show();
-    }
-
-    private void initFail(InitializationErrorType error) {
-        Toast.makeText(getApplicationContext(), "initFail...", Toast.LENGTH_SHORT).show();
-    }
 
     private void setCalibration() {
         GazeTrackerManager.LoadCalibrationResult result = gazeTrackerManager.loadCalibrationData();
         switch (result) {
             case SUCCESS:
-                showToast("setCalibrationData success", false);
+                Log.d("setCalibration", "setCalibrationData success");
                 break;
             case FAIL_DOING_CALIBRATION:
-                showToast("calibrating", false);
+                Log.d("setCalibration", "calibrating");
                 break;
             case FAIL_NO_CALIBRATION_DATA:
-                showToast("Calibration data is null", true);
+                Log.d("setCalibration", "Calibration data is null");
                 break;
             case FAIL_HAS_NO_TRACKER:
-                showToast("No tracker has initialized", true);
+                Log.d("setCalibration", "No tracker has initialized");
                 break;
         }
     }
+
+
 
     private final UserStatusCallback userStatusCallback = new UserStatusCallback() {
         @Override
@@ -600,23 +623,28 @@ public class ActActivity extends AppCompatActivity {
         public void onBlink(long timestamp, boolean isBlinkLeft, boolean isBlinkRight, boolean isBlink, float eyeOpenness) {
             if(isBlink){
                 if (isViewContains(btnClear, filtered[0], filtered[1])) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            btnClear.performClick();
-                        }
-                    });
+                    performBtnClick(btnClear);
+                }
+                if (isViewContains(btnDelete, filtered[0], filtered[1])) {
+                    performBtnClick(btnDelete);
+                }
+                if (isViewContains(btnBack, filtered[0], filtered[1])) {
+                    performBtnClick(btnBack);
+                }
+                if (isViewContains(btnPre, filtered[0], filtered[1])) {
+                    performBtnClick(btnPre);
+                }
+                if (isViewContains(btnNext, filtered[0], filtered[1])) {
+                    performBtnClick(btnNext);
                 }
                 if (isViewContains(imageRecyclerView, filtered[0], filtered[1])) {
-                    View itemView = findViewAtPosition(imageRecyclerView, filtered[0], filtered[1]);
-                    if (itemView != null) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                itemView.performClick();
-                            }
-                        });
-                    }
+                    performRecyclerViewClick(imageRecyclerView, filtered[0], filtered[1]);
+                }
+                if (isViewContains(categoryRecyclerView, filtered[0], filtered[1])) {
+                    performRecyclerViewClick(categoryRecyclerView, filtered[0], filtered[1]);
+                }
+                if (isViewContains(recommendRecyclerView, filtered[0], filtered[1])) {
+                    performRecyclerViewClick(recommendRecyclerView, filtered[0], filtered[1]);
                 }
             }
         }
@@ -624,6 +652,27 @@ public class ActActivity extends AppCompatActivity {
         public void onDrowsiness(long timestamp, boolean isDrowsiness) {
         }
     };
+
+    private void performBtnClick(Button btn) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                btn.performClick();
+            }
+        });
+    }
+
+    private void performRecyclerViewClick(RecyclerView recyclerView, float x, float y){
+        View itemView = findViewAtPosition(recyclerView, x, y);
+        if (itemView != null) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    itemView.performClick();
+                }
+            });
+        }
+    }
 
     private boolean isViewContains(View view, float x, float y) {
         int[] location = new int[2];

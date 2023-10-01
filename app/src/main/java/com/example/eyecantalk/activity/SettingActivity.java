@@ -78,11 +78,6 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        if (preview.isAvailable()) {
-            // When if textureView available
-            gazeTrackerManager.setCameraPreview(preview);
-        }
-
         gazeTrackerManager.setGazeTrackerCallbacks(gazeCallback, calibrationCallback, statusCallback, userStatusCallback);
         Log.i(TAG, "onStart");
     }
@@ -109,7 +104,6 @@ public class SettingActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        gazeTrackerManager.removeCameraPreview(preview);
 
         gazeTrackerManager.removeCallbacks(gazeCallback, calibrationCallback, statusCallback, userStatusCallback);
         Log.i(TAG, "onStop");
@@ -173,7 +167,7 @@ public class SettingActivity extends AppCompatActivity {
         if (isGranted) {
             permissionGranted();
         } else {
-            showToast("not granted permissions", true);
+            Log.d("permission", "not granted permissions");
             finish();
         }
     }
@@ -202,12 +196,11 @@ public class SettingActivity extends AppCompatActivity {
     // permission end
 
     // view
-    private TextureView preview;
     private View layoutProgress;
     private View viewWarningTracking;
     private PointView viewPoint;
     private Button btnInitGaze, btnReleaseGaze;
-    private Button btnStartCalibration, btnStopCalibration, btnSetCalibration;
+    private Button btnStartCalibration;
     private Button btnGuiDemo;
     private Switch switchEyeTracking;
     private CalibrationViewer viewCalibration;
@@ -215,9 +208,6 @@ public class SettingActivity extends AppCompatActivity {
     private AttentionView viewAttention;
     private DrowsinessView viewDrowsiness;
 
-    // gaze coord filter
-    private SwitchCompat swUseGazeFilter;
-    private SwitchCompat swStatusBlink, swStatusAttention, swStatusDrowsiness;
     private boolean isUseGazeFilter = true;
     private boolean isStatusBlink = false;
     private boolean isStatusAttention = false;
@@ -236,9 +226,6 @@ public class SettingActivity extends AppCompatActivity {
 
         viewWarningTracking = findViewById(R.id.view_warning_tracking);
 
-        preview = findViewById(R.id.preview);
-        preview.setSurfaceTextureListener(surfaceTextureListener);
-
         btnInitGaze = findViewById(R.id.btn_init_gaze);
         btnReleaseGaze = findViewById(R.id.btn_release_gaze);
         btnInitGaze.setOnClickListener(onClickListener);
@@ -246,9 +233,6 @@ public class SettingActivity extends AppCompatActivity {
 
         btnStartCalibration = findViewById(R.id.btn_start_calibration);
         btnStartCalibration.setOnClickListener(onClickListener);
-
-        btnSetCalibration = findViewById(R.id.btn_set_calibration);
-        btnSetCalibration.setOnClickListener(onClickListener);
 
         btnGuiDemo = findViewById(R.id.btn_gui_demo);
         btnGuiDemo.setOnClickListener(onClickListener);
@@ -290,28 +274,6 @@ public class SettingActivity extends AppCompatActivity {
         setViewAtGazeTrackerState();
     }
 
-    private TextureView.SurfaceTextureListener surfaceTextureListener = new TextureView.SurfaceTextureListener() {
-        @Override
-        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            // When if textureView available
-            gazeTrackerManager.setCameraPreview(preview);
-        }
-
-        @Override
-        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
-        }
-
-        @Override
-        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            return false;
-        }
-
-        @Override
-        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-
-        }
-    };
 
     // The gaze or calibration coordinates are delivered only to the absolute coordinates of the entire screen.
     // The coordinate system of the Android view is a relative coordinate system,
@@ -375,11 +337,7 @@ public class SettingActivity extends AppCompatActivity {
                 releaseGaze();
             }  else if (v == btnStartCalibration) {
                 startCalibration();
-            } else if (v == btnStopCalibration) {
-                stopCalibration();
-            } else if (v == btnSetCalibration) {
-                setCalibration();
-            } else if (v == btnGuiDemo) {
+            }  else if (v == btnGuiDemo) {
                 showGuiDemo();
             }
         }
@@ -442,7 +400,6 @@ public class SettingActivity extends AppCompatActivity {
                 btnInitGaze.setEnabled(!isTrackerValid());
                 btnReleaseGaze.setEnabled(isTrackerValid());
                 btnStartCalibration.setEnabled(isTracking());
-                btnSetCalibration.setEnabled(isTrackerValid());
                 if (!isTracking()) {
                     hideCalibrationView();
                 }
@@ -556,7 +513,8 @@ public class SettingActivity extends AppCompatActivity {
             // When calibration is finished, calibration data is stored to SharedPreference
 
             hideCalibrationView();
-            showToast("calibrationFinished", true);
+            Log.d("permission", "calibrationFinished");
+            showToast("시선보정이 완료되었습니다.", true);
         }
     };
 
@@ -615,14 +573,11 @@ public class SettingActivity extends AppCompatActivity {
         gazeTrackerManager.startGazeTracking();
     }
 
-    private void stopTracking() {
-        gazeTrackerManager.stopGazeTracking();
-    }
 
     private boolean startCalibration() {
         boolean isSuccess = gazeTrackerManager.startCalibration(calibrationType, criteria);
         if (!isSuccess) {
-            showToast("calibration start fail", false);
+            showToast("시선보정이 실패하였습니다.", false);
         }
         setViewAtGazeTrackerState();
         return isSuccess;
@@ -638,25 +593,6 @@ public class SettingActivity extends AppCompatActivity {
     private void stopCalibration() {
         gazeTrackerManager.stopCalibration();
         hideCalibrationView();
-        setViewAtGazeTrackerState();
-    }
-
-    private void setCalibration() {
-        GazeTrackerManager.LoadCalibrationResult result = gazeTrackerManager.loadCalibrationData();
-        switch (result) {
-            case SUCCESS:
-                showToast("setCalibrationData success", false);
-                break;
-            case FAIL_DOING_CALIBRATION:
-                showToast("calibrating", false);
-                break;
-            case FAIL_NO_CALIBRATION_DATA:
-                showToast("Calibration data is null", true);
-                break;
-            case FAIL_HAS_NO_TRACKER:
-                showToast("No tracker has initialized", true);
-                break;
-        }
         setViewAtGazeTrackerState();
     }
 

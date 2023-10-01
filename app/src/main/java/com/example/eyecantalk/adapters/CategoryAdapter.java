@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.eyecantalk.R;
+import com.example.eyecantalk.imageData.ImageData;
 
 import java.util.List;
 
@@ -17,6 +18,11 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryViewHolder> {
     public CategoryAdapter(List<String> categoryList, OnCategoryItemClickListener onCategoryItemClickListener) {
         this.categoryList = categoryList;
         this.onCategoryItemClickListener = onCategoryItemClickListener;
+    }
+
+    public void setCategoryList(List<String> categoryList) {
+        this.categoryList = categoryList;
+        notifyDataSetChanged();
     }
 
     @Override

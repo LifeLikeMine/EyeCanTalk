@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardBackgroundColor="#fefbff"
+    android:layout_width="60dp"
+    android:layout_height="85dp"
+    android:layout_marginHorizontal="3dp"
+    app:cardCornerRadius="8dp">
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="60dp"
     android:layout_height="85dp"
-    android:layout_marginHorizontal="3dp"
     android:orientation="vertical">
-
     <!-- ImageView: 사진을 표시할 뷰 -->
     <ImageView
         android:id="@+id/selectedImageView"
@@ -14,7 +21,6 @@
         android:scaleType="centerCrop"
         android:src="@drawable/baseline_settings_24"
         android:layout_gravity="center" />
-
     <!-- TextView: 이미지 아래에 이름을 표시할 뷰 -->
     <TextView
         android:id="@+id/selectedTextView"
@@ -26,3 +32,4 @@
         android:textSize="10dp"
         android:layout_gravity="center"/>
 </LinearLayout>
+</androidx.cardview.widget.CardView>

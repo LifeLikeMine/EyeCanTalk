@@ -21,6 +21,7 @@ android {
         versionCode 1
         versionName "1.0"
         buildConfigField "String", "SEESO_KEY", properties['seesoKey']
+        buildConfigField "String", "SERVER_URL", properties['serverUrl']
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         ndk {

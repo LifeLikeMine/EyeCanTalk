@@ -18,14 +18,17 @@ public class RecommendImageAdapter extends RecyclerView.Adapter<RecommendImageAd
 
     private List<ImageData> recommendImages;
 
-    public RecommendImageAdapter(List<ImageData> recommendImages) {
+    private OnImageItemClickListener onImageItemClickListener;
+
+    public RecommendImageAdapter(List<ImageData> recommendImages, OnImageItemClickListener onImageItemClickListener) {
         this.recommendImages = recommendImages;
+        this.onImageItemClickListener = onImageItemClickListener;
     }
 
     @NonNull
     @Override
     public RecommendImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_selected_image, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_recommned, parent, false);
         return new RecommendImageViewHolder(view);
     }
 
@@ -33,6 +36,12 @@ public class RecommendImageAdapter extends RecyclerView.Adapter<RecommendImageAd
     public void onBindViewHolder(@NonNull RecommendImageViewHolder holder, int position) {
         ImageData imageData = recommendImages.get(position);
         holder.bind(imageData);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onImageItemClickListener.onImageItemClick(imageData);
+            }
+        });
     }
 
     @Override

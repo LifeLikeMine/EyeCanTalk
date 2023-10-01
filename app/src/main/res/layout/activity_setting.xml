@@ -6,11 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".activity.SettingActivity">
 
-    <TextureView
-        android:id="@+id/preview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
     <View
         android:id="@+id/view_warning_tracking"
         android:layout_width="match_parent"
@@ -38,35 +33,35 @@
                     android:id="@+id/btn_init_gaze"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/font"
                     android:text="아이트래킹 테스트" />
 
                 <Button
                     android:id="@+id/btn_release_gaze"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/font"
                     android:text="아이트래킹 종료" />
 
                 <Button
                     android:id="@+id/btn_start_calibration"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/font"
                     android:text="아이트래킹 시선 보정" />
 
-                <Button
-                    android:id="@+id/btn_set_calibration"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="시선 보정 불러오기" />
 
                 <Button
                     android:id="@+id/btn_gui_demo"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/font"
                     android:text="아이트래킹 데모" />
 
                 <Switch
                     android:id="@+id/switch_eyeTracking"
                     android:layout_width="wrap_content"
+                    android:fontFamily="@font/font"
                     android:text="아이트래킹 켜기"
                     android:layout_marginTop="10dp"
                     android:layout_gravity="right"

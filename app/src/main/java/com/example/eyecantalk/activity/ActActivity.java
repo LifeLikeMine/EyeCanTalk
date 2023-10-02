@@ -184,6 +184,7 @@ public class ActActivity extends AppCompatActivity {
         btnDelete.setOnClickListener(onClickListener);
         btnBack = findViewById(R.id.btn_back);
         btnBack.setOnClickListener(onClickListener);
+        btnBack.setEnabled(false);
 
         btnPre = findViewById(R.id.btn_pre);
         btnNext = findViewById(R.id.btn_next);
@@ -292,7 +293,7 @@ public class ActActivity extends AppCompatActivity {
             public void onCategoryItemClick(String category) {
                 switchCategory(category);
                 categoryAdapter.setCategoryList(nullCList);
-                btnBack.setVisibility(View.VISIBLE);
+                btnBack.setEnabled(true);
                 categoryRecyclerView.setVisibility(View.GONE);
                 imageRecyclerView.setVisibility(View.VISIBLE);
             }
@@ -470,7 +471,7 @@ public class ActActivity extends AppCompatActivity {
                 categoryAdapter.setCategoryList(categoryList);
                 imageRecyclerView.setVisibility(View.GONE);
                 categoryRecyclerView.setVisibility(View.VISIBLE);
-                btnBack.setVisibility(View.GONE);
+                btnBack.setEnabled(false);
             } else if (v == btnDelete) {
                 if(selectedImages.size() > 1) {
                     selectedImages.remove(selectedImages.size() - 1);

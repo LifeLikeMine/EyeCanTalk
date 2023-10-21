@@ -26,7 +26,11 @@
 
 ## 화면 구성
 
+### 메인 화면 구성도
+![image](https://github.com/LifeLikeMine/EyeCanTalk/assets/114338420/bd13fba3-5ebe-4a5f-b2b2-83b1fcb90f18)
 
+### 설정 화면 구성도
+![image](https://github.com/LifeLikeMine/EyeCanTalk/assets/114338420/d08a94c3-3f20-4c49-b831-4a6583311b92)
 
 
 

@@ -1,7 +1,7 @@
 # EyeCanTalk
 > 아이트래킹을 활용한 보완대체의사소통 앱
 
-[![NPM Version][npm-image]][npm-url]
+<img src="https://img.shields.io/badge/Java-007396?style=for-the-badge&logo=java&logoColor=white">
 [![Build Status][travis-image]][travis-url]
 [![Downloads Stats][npm-downloads]][npm-url]
 

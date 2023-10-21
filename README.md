@@ -17,6 +17,9 @@
    <img src="https://img.shields.io/badge/jupyter-F37626?style=for-the-badge&logo=jupyter&logoColor=white">
    <img src="https://img.shields.io/badge/github-181717?style=for-the-badge&logo=github&logoColor=white">
    <img src="https://img.shields.io/badge/amazonaws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white">
+   <img src="https://img.shields.io/badge/tensorflow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white">
+   <img src="https://img.shields.io/badge/flask-000000?style=for-the-badge&logo=flask&logoColor=white">
+ 
 </div>
 
 ## 프로젝트 개요
@@ -35,3 +38,21 @@
 
 
 ## 주요 기능
+
+## AI
+
+GRU 를 활용한  AAC 상징 추천 모델 개발
+
+- AAC 상징 시퀀스 데이터 의 마지막 값을 Y 나머지 값을 X로 분리
+- 데이터 전처리 (pad_sequence, 원핫 인코딩)
+- Embedding -> GRU -> Dense 레이어 구조
+
+#### 학습 데이터
+
+- 사용자가 앱을 사용하면서 쌓인 AAC 상징 시퀀스 데이터
+
+#### 학습 결과
+
+
+
+
